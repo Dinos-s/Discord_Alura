@@ -1,4 +1,6 @@
 # DESENVOLVENDO: Discord Estilo Alura
 
 Dia - 24/01/2022: 
-Aprendendo alguns conceitos básicos de React com a Alura!
+Aprendendo alguns conceitos básicos de React com a Alura!;
+Dia - 25/01/2002:
+Entendendo state, mudanças de páginas, a diferença entre o uso do input e do TextField;
