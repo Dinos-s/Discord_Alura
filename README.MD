@@ -8,3 +8,7 @@ Dia - 26/01/2022:
 Aprimoranddo o conhecimento do useState(); Configurando a chatPage para o modo offline;
 Dia - 27/01/2022:
 Armazenando mensagens no supabase.io; Conhecendo uma alternativa do firebase;
+Dia - 28/01/2022:
+Adicionando os stickers;
+
+Projeto criado com o auxilio com a turma da @Alura;

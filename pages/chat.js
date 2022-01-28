@@ -1,33 +1,56 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { useRouter } from "next/router";
 import { createClient } from '@supabase/supabase-js';
+import {ButtonSendSticker} from '../src/components/ButtonSendSticker'
 
 const SUPABASE_ANOW_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzI4NjU2OSwiZXhwIjoxOTU4ODYyNTY5fQ.QJB8HvirH_yX6bETmCPLt2wRTyOMYAvuXX2cZzqhauU';
 const SUPABASE_URL = 'https://rjzdkzurnteewzmqlylg.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANOW_KEY);
 
-
+function pegaMensagensRealTime(addMensager){
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (resposta) => {
+            console.log('Nova mensagem');
+            addMensager(resposta.new);
+        })
+        .subscribe();
+}
 
 export default function ChatPage() {
+    const roteamento = useRouter();
+    const usuarioLogado = roteamento.query.username;
+    console.log("UsuarioLogado:", usuarioLogado);
     const [mensagem, setMensagem] = React.useState('');
     const [listaMensagem, setListaMensagem] = React.useState([]);
 
     React.useEffect(() => {
         supabaseClient
-        .from('mensagens')
-        .select('*')
-        .order('id', {ascending: false})
-        .then(({data}) => {
-            console.log('Dados da consulta: ', data);
-            setListaMensagem(data);
+            .from('mensagens')
+            .select('*')
+            .order('id', {ascending: false})
+            .then(({data}) => {
+                console.log('Dados da consulta: ', data);
+                setListaMensagem(data);
+            });
+
+        pegaMensagensRealTime((novaMensagem) => {
+            console.log('Nova Mensagem: ', novaMensagem)
+            setListaMensagem((valorAtualDaLista) => {
+                return [
+                    novaMensagem,
+                    ...valorAtualDaLista
+                ]
+            });
         });
     }, []);
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
             //id: listaMensagem.length + 1,
-            de: 'vanessametonini',
+            de: usuarioLogado,
             texto: novaMensagem,
         };
         supabaseClient
@@ -36,11 +59,7 @@ export default function ChatPage() {
                 mensagem
             ])
             .then(({data}) => {
-                console.log('Criando Mensagem: ', data);
-                setListaMensagem([
-                    data[0],
-                    ...listaMensagem,
-                ]);
+                console.log('Criando Mensagem: ', data); 
             });
 
         setMensagem('');
@@ -123,6 +142,13 @@ export default function ChatPage() {
                                 backgroundColor: appConfig.theme.colors.neutrals[800],
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
+                            }}
+                        /> 
+                        {/* CallBack */}
+                        <ButtonSendSticker 
+                            onStickerClick={(sticker) => {
+                                console.log('[USANDO O COMPONENTE] sticker salvo no BD');
+                                handleNovaMensagem(':sticker: ' + sticker);
                             }}
                         />
                     </Box>
@@ -207,7 +233,13 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {mensagem.texto}
+                            {mensagem.texto.startsWith(':sticker:')
+                            ?   (
+                                    <Image src={mensagem.texto.replace(':sticker:', '')} />
+                            ) 
+                            : (
+                                mensagem.texto
+                            )}
                     </Text>
                 );
             })}
